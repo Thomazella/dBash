@@ -80,3 +80,16 @@ trim() {
 	# todo: proper trim using a for reading each char
 	true
 }
+
+#- - - - - - - - - - -
+
+mute() {
+	dotest "$# == 0" && return 1
+	local noStdout=1\>/dev/null
+	local noStderr=2\>/dev/null
+	eval "$@" $noStdout $noStderr
+}
+
+#--------------
+
+alias doifelse='ternary'
