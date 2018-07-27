@@ -13,7 +13,7 @@ previousStatus() {
 #- - - - - - - - - - -
 
 doifprevious() {
-	if previousStatus;
+	if [ "$?" == 0 ]
 		then eval "$@" && return 0
 	fi
 	return 1
@@ -85,7 +85,7 @@ doif() {
 
 status() {
 	# [ $# == 0 ] && return 1
-	mute eval "$@"
+	eval "$@" 1>/dev/null 2>/dev/null
 	echo $?
 }
 
@@ -99,7 +99,7 @@ trim() {
 #- - - - - - - - - - -
 
 mute() {
-	dotest "$# == 0" && return 1
+	[ "$#" == 0 ] && return 1
 	local noStdout=1\>/dev/null
 	local noStderr=2\>/dev/null
 	eval "$@" $noStdout $noStderr
@@ -108,10 +108,10 @@ mute() {
 #- - - - - - - - - - -
 
 and() {
-	dotest "$# == 0" && return 1
+	[ "$#" == 0 ] && return 1
 	for((i=1; i <= ${#}; i++)); do
 		eval "\$$i"
-		previousStatus || return 1
+		if [ "$?" != 0 ]; then return 1; fi
 	done
 	return 0
 }
@@ -119,10 +119,10 @@ and() {
 #- - - - - - - - - - -
 
 or() {
-	dotest "$# == 0" && return 1
+	[ "$#" == 0 ] && return 1
 	for((i=1; i <= ${#}; i++)); do
 		eval "\$$i"
-		previousStatus && return 0
+		if [ "$?" == 0 ]; then return 0; fi
 	done
 	return 1
 }
