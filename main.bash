@@ -130,3 +130,5 @@ or() {
 #--------------
 
 alias doifelse='ternary'
+alias all='and'
+alias any='or'
