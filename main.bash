@@ -6,6 +6,21 @@ ifCommandSuceeded() {
 
 #- - - - - - - - - - -
 
+previousStatus() {
+	return $?
+}
+
+#- - - - - - - - - - -
+
+doifprevious() {
+	if previousStatus;
+		then eval "$@" && return 0
+	fi
+	return 1
+}
+
+#- - - - - - - - - - -
+
 not() {
 	[ $# == 0 ] && return 1
 	eval $@ && return 1
@@ -69,8 +84,8 @@ doif() {
 #- - - - - - - - - - -
 
 status() {
-	[ $# == 0 ] && return 1
-	eval "$@" 1>/dev/null 2>&1
+	# [ $# == 0 ] && return 1
+	mute eval "$@"
 	echo $?
 }
 
@@ -88,6 +103,28 @@ mute() {
 	local noStdout=1\>/dev/null
 	local noStderr=2\>/dev/null
 	eval "$@" $noStdout $noStderr
+}
+
+#- - - - - - - - - - -
+
+and() {
+	dotest "$# == 0" && return 1
+	for((i=1; i <= ${#}; i++)); do
+		eval "\$$i"
+		previousStatus || return 1
+	done
+	return 0
+}
+
+#- - - - - - - - - - -
+
+or() {
+	dotest "$# == 0" && return 1
+	for((i=1; i <= ${#}; i++)); do
+		eval "\$$i"
+		previousStatus && return 0
+	done
+	return 1
 }
 
 #--------------
