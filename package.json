@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "bats": "^1.1.0"
+  },
+  "scripts": {
+    "test": "/usr/local/bin/yarn bats test"
+  }
+}
