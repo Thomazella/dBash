@@ -84,7 +84,6 @@ doif() {
 #- - - - - - - - - - -
 
 status() {
-	# [ $# == 0 ] && return 1
 	eval "$@" 1>/dev/null 2>/dev/null
 	echo $?
 }
@@ -111,7 +110,7 @@ and() {
 	[ "$#" == 0 ] && return 1
 	for((i=1; i <= ${#}; i++)); do
 		eval "\$$i"
-		if [ "$?" != 0 ]; then return 1; fi
+		[ "$?" != 0 ] && return 1
 	done
 	return 0
 }
@@ -122,7 +121,7 @@ or() {
 	[ "$#" == 0 ] && return 1
 	for((i=1; i <= ${#}; i++)); do
 		eval "\$$i"
-		if [ "$?" == 0 ]; then return 0; fi
+		[ "$?" == 0 ] && return 0
 	done
 	return 1
 }
