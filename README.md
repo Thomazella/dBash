@@ -2,7 +2,8 @@
 
 ## todo
 
-*some good names*
+_some good names_
+
 - istrue previous istruthy
 - iftrue ifprevious iftruthy
-- doiftrue doifprevious doiftruthy
+- doiftrue ifprevious doiftruthy
