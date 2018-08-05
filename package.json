@@ -5,7 +5,9 @@
   },
   "scripts": {
     "test": "yarn bats test",
-    "test:watch": "yarn watch 'clear && yarn bats test' test",
-    "patch-bats": "cp test/bats-format-tap-stream node_modules/bats/libexec/bats-core/ && cp test/bats-exec-test node_modules/bats/libexec/bats-core/"
+    "test:watch": "yarn watch 'clear && yarn bats test' test $PWD",
+    "patch-bats": "cp test/bats-format-tap-stream node_modules/bats/libexec/bats-core/ && cp test/bats-exec-test node_modules/bats/libexec/bats-core/",
+    "pretest": "yarn lint",
+    "lint": "shellcheck main.bash"
   }
 }

@@ -46,8 +46,8 @@ truthy() {
 dotest() {
   [ $# == 0 ] && return 1
   local predicate="$@" isNotTruthyTestOrInvalid='^-[[:alpha:]][ ][^ ]+|[^ ]+[ ]-[[:alpha:]][[:alpha:]][ ][^ ]+|[^ ]+[ ]=[ ][^ ]+|[^ ]+[ ]==[ ][^ ]+|[^ ]+[ ]!=[ ][^ ]+|[^ ]+[ ]<[ ][^ ]+|[^ ]+[ ]>[ ][^ ]+'
-  if [[ "$predicate" =~ $isNotTruthyTestOrInvalid ]]
-  then [ $predicate ] 2>/dev/null && return 0
+  if [[ "$predicate" =~ $isNotTruthyTestOrInvalid ]]; then
+    [ $predicate ] 2>/dev/null && return 0
   fi
   return 1
 }
@@ -56,32 +56,33 @@ dotest() {
 
 ternary() {
   [ $# -lt 5 ] && return 1
-	# reject malformed arguments. This is good: foo ? a : b.
-	[[ ! "$@" =~ [[:space:]]+[?][[:space:]]+[^:]+[[:space:]]+[:][[:space:]]+ ]] && return 1
+  # reject malformed arguments. This is good: foo ? a : b.
+  [[ ! "$@" =~ [[:space:]]+[?][[:space:]]+[^:]+[[:space:]]+[:][[:space:]]+ ]] && return 1
 
-	local condition pass fail passCommand failCommand
-	# parse args into local var condition, pass and fail
-	for arg in $@; do
-		[ $arg == "?" -a ! "$question" ] && local question=true && continue
-		[ $arg == ":" -a ! "$colon" ] && local colon=true && continue
-		[ ! $question -a ! $colon ] && condition="$condition $arg" && continue
-		[ $question -a ! $colon ] && pass="$pass $arg" && continue
-		fail="$fail $arg"
-	done
+  local condition pass fail passCommand failCommand
+  # parse args into local var condition, pass and fail
+  for arg in $@; do
+    [ $arg == "?" -a ! "$question" ] && local question=true && continue
+    [ $arg == ":" -a ! "$colon" ] && local colon=true && continue
+    [ ! $question -a ! $colon ] && condition="$condition $arg" && continue
+    [ $question -a ! $colon ] && pass="$pass $arg" && continue
+    fail="$fail $arg"
+  done
 
-	# get the first word out
-	[[ "$pass" =~ ^[[:space:]]*([^ ]+) ]] && passCommand=${BASH_REMATCH[1]}
-	[[ "$fail" =~ ^[[:space:]]*([^ ]+) ]] && failCommand=${BASH_REMATCH[1]}
-	# if it's not a command, assume it's a value and append printf
+  # get the first word out
+  [[ "$pass" =~ ^[[:space:]]*([^ ]+) ]] && passCommand=${BASH_REMATCH[1]}
+  [[ "$fail" =~ ^[[:space:]]*([^ ]+) ]] && failCommand=${BASH_REMATCH[1]}
+  # if it's not a command, assume it's a value and append printf
   if ! which $passCommand >/dev/null 2>&1; then pass="printf \"$pass\""; fi
   if ! which $failCommand >/dev/null 2>&1; then fail="printf \"$fail\""; fi
-	# handle cases where condition = true|false
+  # handle cases where condition = true|false
   if [[ "$condition" =~ [[:space:]]*true[[:space:]]* ]]; then eval $pass && return; fi
   if [[ "$condition" =~ [[:space:]]*false[[:space:]]* ]]; then eval $fail && return; fi
-	# main logic
-  if dotest $condition
-  then eval $pass
-  else eval $fail
+  # main logicf
+  if dotest $condition; then
+    eval $pass
+  else
+    eval $fail
   fi
 }
 
@@ -89,8 +90,8 @@ ternary() {
 
 doif() {
   [ $# -lt 2 ] && return 1
-  if dotest "$1"
-  then shift && eval "$@"
+  if dotest "$1"; then
+    shift && eval "$@"
   fi
 }
 
@@ -120,7 +121,7 @@ mute() {
 
 and() {
   [ "$#" == 0 ] && return 1
-  for((i=1; i <= ${#}; i++)); do
+  for ((i = 1; i <= ${#}; i++)); do
     eval "\$$i"
     [ "$?" != 0 ] && return 1
   done
@@ -138,7 +139,7 @@ iscommand() {
 
 or() {
   [ "$#" == 0 ] && return 1
-  for((i=1; i <= ${#}; i++)); do
+  for ((i = 1; i <= ${#}; i++)); do
     eval "\$$i"
     [ "$?" == 0 ] && return 0
   done
