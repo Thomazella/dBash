@@ -19,10 +19,10 @@ exitstatus() {
 #- - - - - - - - - - -
 
 ifprevious() {
-	# do commands if previous command exited with a 0
-	local previous=$?
-	[ $previous != 0 ] && return $previous
-	eval "$@"
+  # do commands if previous command exited with a 0
+  local previous=$?
+  [ $previous != 0 ] && return $previous
+  eval "$@"
 }
 
 #- - - - - - - - - - -
@@ -48,17 +48,7 @@ dotest() {
   local predicate="$@"
   local isNotTruthyTestOrInvalid='^-[[:alpha:]][ ][^ ]+|[^ ]+[ ]-[[:alpha:]][[:alpha:]][ ][^ ]+|[^ ]+[ ]=[ ][^ ]+|[^ ]+[ ]==[ ][^ ]+|[^ ]+[ ]!=[ ][^ ]+|[^ ]+[ ]<[ ][^ ]+|[^ ]+[ ]>[ ][^ ]+'
   if [[ "$predicate" =~ $isNotTruthyTestOrInvalid ]]
-		then [ $predicate ] 2>/dev/null && return 0
-  fi
-  return 1
-}
-
-#- - - - - - - - - - -
-
-istrue() {
-  [ $# == 0 ] && return 1
-  if truthy $@ && dotest $@
-  then return 0
+  then [ $predicate ] 2>/dev/null && return 0
   fi
   return 1
 }
@@ -67,10 +57,15 @@ istrue() {
 
 ternary() {
   [ $# != 3 ] && return 1
-  local test="$1"
+  local condition="$1"
   local pass="$2"
-  shift && shift && local fail="$@"
-  if istrue $test
+  local fail="$3"
+  local silent=">/dev/null 2>&1"
+  if ! which $pass $silent; then pass="printf $pass"; fi
+  if ! which $fail $silent; then fail="printf $fail"; fi
+  if [ "$condition" == true ]; then eval $pass && return; fi
+  if [ "$condition" == false ]; then eval $fail && return; fi
+  if dotest $condition
   then eval $pass
   else eval $fail
   fi
@@ -80,7 +75,7 @@ ternary() {
 
 doif() {
   [ $# -lt 2 ] && return 1
-  if istrue "$1"
+  if dotest "$1"
   then shift && eval "$@"
   fi
 }
@@ -117,6 +112,13 @@ and() {
     [ "$?" != 0 ] && return 1
   done
   return 0
+}
+
+#- - - - - - - - - - -
+
+iscommand() {
+  [ "$#" == 0 ] && return 1
+  which "$1" >/dev/null 2>&1 || return 1
 }
 
 #- - - - - - - - - - -

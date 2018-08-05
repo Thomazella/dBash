@@ -118,3 +118,54 @@
   run dotest -f
   [ $status == 1 ]
 }
+
+@test "dotest with if" {
+  if dotest -n "somelength"; then true; fi
+}
+
+@test "dotest with if else" {
+  if dotest 1 -gt 20; then false; else true; fi
+}
+
+@test "ternary exits 1 when not given 3 args" {
+  run ternary 1
+  [ $status == 1 ]
+  run ternary 1 2
+  [ $status == 1 ]
+  run ternary 1 2 3 4
+  [ $status == 1 ]
+}
+
+@test "ternary '1 == 1' y n" {
+  run ternary '1 == 1' y n
+  [ $output == "y" ]
+}
+
+@test "ternary '1 == 10' y n" {
+  run ternary '1 == 10' y n
+  [ $output == "n" ]
+}
+
+@test "ternary true y n" {
+  run ternary true y n
+  [ $output == "y" ]
+}
+
+@test "ternary false y n" {
+  run ternary false y n
+  [ $output == "n" ]
+}
+
+@test "ternary '\$var == \$var' y n" {
+  local a=1
+  local b=2
+  run ternary "$a == $b" y n
+  [ $output == "n" ]
+}
+
+@test "ternary in var declaration" {
+  local b=$(ternary true 99 00)
+  [ $b == 99 ]
+}
+
+# rewrite ternary to use ? : as argument separators
