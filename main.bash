@@ -19,7 +19,7 @@ exitstatus() {
 #- - - - - - - - - - -
 
 ifprevious() {
-  # do commands if previous command exited with a 0
+  # if previous command exited with 0, do stuff
   local previous=$?
   [ $previous != 0 ] && return $previous
   eval "$@"
@@ -56,23 +56,29 @@ dotest() {
 
 ternary() {
   [ $# -lt 5 ] && return 1
+	# reject malformed arguments. This is good: foo ? a : b.
 	[[ ! "$@" =~ [[:space:]]+[?][[:space:]]+[^:]+[[:space:]]+[:][[:space:]]+ ]] && return 1
 
 	local condition pass fail passCommand failCommand
+	# parse args into local var condition, pass and fail
 	for arg in $@; do
-		[ $arg == "?" ] && local mark=true && continue
-		[ $arg == ":" ] && local colon=true && continue
-		[ ! $mark -a ! $colon ] && condition="$condition $arg" && continue
-		[ $mark -a ! $colon ] && pass="$pass $arg" && continue
+		[ $arg == "?" -a ! "$question" ] && local question=true && continue
+		[ $arg == ":" -a ! "$colon" ] && local colon=true && continue
+		[ ! $question -a ! $colon ] && condition="$condition $arg" && continue
+		[ $question -a ! $colon ] && pass="$pass $arg" && continue
 		fail="$fail $arg"
 	done
 
+	# get the first word out
 	[[ "$pass" =~ ^[[:space:]]*([^ ]+) ]] && passCommand=${BASH_REMATCH[1]}
 	[[ "$fail" =~ ^[[:space:]]*([^ ]+) ]] && failCommand=${BASH_REMATCH[1]}
+	# if it's not a command, assume it's a value and append printf
   if ! which $passCommand >/dev/null 2>&1; then pass="printf \"$pass\""; fi
   if ! which $failCommand >/dev/null 2>&1; then fail="printf \"$fail\""; fi
+	# handle cases where condition = true|false
   if [[ "$condition" =~ [[:space:]]*true[[:space:]]* ]]; then eval $pass && return; fi
   if [[ "$condition" =~ [[:space:]]*false[[:space:]]* ]]; then eval $fail && return; fi
+	# main logic
   if dotest $condition
   then eval $pass
   else eval $fail
@@ -141,6 +147,6 @@ or() {
 
 #--------------
 
-alias doifelse='ternary'
+alias conditional='ternary'
 alias all='and'
 alias any='or'

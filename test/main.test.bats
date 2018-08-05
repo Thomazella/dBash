@@ -35,22 +35,22 @@
   [ $status == 123 ]
 }
 
-@test "not with no args exits 1" {
+@test "not with no args exit 1" {
   run not
   [ $status == 1 ]
 }
 
-@test "not <exit 0> exits 1" {
+@test "not <exit 0> exit 1" {
   run not exitwith 0
   [ $status == 1 ]
 }
 
-@test "not <exit 1> exits 0" {
+@test "not <exit 1> exit 0" {
   run not exitwith 1
   [ $status == 0 ]
 }
 
-@test "truthy with no args exits 1" {
+@test "truthy with no args exit 1" {
   run truthy
   [ $status == 1 ]
 }
@@ -60,17 +60,17 @@
   [ $status != 1 ]
 }
 
-@test "truthy 'foo' exits length of foo" {
+@test "truthy 'foo' exit length of foo" {
   run truthy 'foo'
   [ $status == 3 ]
 }
 
-@test "truthy '' exits 1" {
+@test "truthy '' exit 1" {
   run truthy ''
   [ $status == 1 ]
 }
 
-@test "dotest with no args exits 1" {
+@test "dotest with no args exit 1" {
   run dotest
   [ $status == 1 ]
 }
@@ -93,28 +93,28 @@
   dotest "12 -gt 2"
 }
 
-@test "dotest \$foo exits 1" {
+@test "dotest \$foo exit 1" {
   local foo=123
   run dotest $foo
   [ $status == 1 ]
 }
 
-@test "dotest -n \$foo exits 0" {
+@test "dotest -n \$foo exit 0" {
   local foo=123
   dotest -n $foo
 }
 
-@test "dotest 341 exits 1" {
+@test "dotest 341 exit 1" {
   run dotest 341
   [ $status == 1 ]
 }
 
-@test "dotest -ffoobar exits 1" {
+@test "dotest -ffoobar exit 1" {
   run dotest -ffoobar
   [ $status == 1 ]
 }
 
-@test "dotest -f exits 1" {
+@test "dotest -f exit 1" {
   run dotest -f
   [ $status == 1 ]
 }
@@ -127,7 +127,7 @@
   if dotest 1 -gt 20; then false; else true; fi
 }
 
-@test "ternary exits 1 when not given 5 args" {
+@test "ternary exit 1 when not given 5 args" {
   run ternary 1
   [ $status == 1 ]
   run ternary 1 2
@@ -151,7 +151,7 @@
   [ $output == "y" ]
 }
 
-@test "ternaryt false ? y : n" {
+@test "ternary false ? y : n" {
   run ternary false ? y : n
   [ $output == "n" ]
 }
@@ -163,9 +163,7 @@
   [ $output == "n" ]
 }
 
-@test "ternary in var declaration" {
+@test "one liner ternary in var declaration" {
   local b=$(ternary true ? 99 : 00)
   [ $b == 99 ]
 }
-
-# rewrite ternary to use ? : as argument separators
