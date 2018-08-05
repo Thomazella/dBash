@@ -5,7 +5,7 @@ noop() {
 
 #- - - - - - - - - - -
 
-returnit() {
+exitwith() {
   [ $# == 0 ] && return 0
   return $1
 }
@@ -29,7 +29,7 @@ ifprevious() {
 
 not() {
   [ $# == 0 ] && return 1
-  eval $@ && return 1
+  eval "$@" && return 1
   return 0
 }
 
@@ -37,9 +37,7 @@ not() {
 
 truthy() {
   [ $# == 0 ] && return 1
-  if [ "${#1}" != 0 ]
-  then return 0
-  fi
+  [ "$1" ] && return ${#1}
   return 1
 }
 
