@@ -1,4 +1,15 @@
-#!/usr/bin/env bash
+#! /usr/bin/env bash
+
+alias conditional='ternary'
+alias all='and'
+alias any='or'
+
+export MUTEOUT=\>/dev/null
+export MUTEERR=2\>/dev/null
+export MUTE="$MUTEOUT $MUTEERR"
+
+#- - - - - - - - - - -
+
 noop() {
   true
 }
@@ -18,8 +29,7 @@ exitstatus() {
 
 #- - - - - - - - - - -
 
-ifprevious() {
-  # if previous command exited with 0, do stuff
+iflast() {
   local previous=$?
   [ $previous != 0 ] && return $previous
   eval "$@"
@@ -43,10 +53,11 @@ truthy() { # remove truthy
 
 #- - - - - - - - - - -
 
-ok() { # remove strict predicate check and allow [ $foo ]
+ok() {
   [ $# == 0 ] && return 1
   local predicate="$*" isNotTruthyTestOrInvalid='^-[[:alpha:]][ ][^ ]+|[^ ]+[ ]-[[:alpha:]][[:alpha:]][ ][^ ]+|[^ ]+[ ]=[ ][^ ]+|[^ ]+[ ]==[ ][^ ]+|[^ ]+[ ]!=[ ][^ ]+|[^ ]+[ ]<[ ][^ ]+|[^ ]+[ ]>[ ][^ ]+'
   if [[ "$predicate" =~ $isNotTruthyTestOrInvalid ]]; then
+    # shellcheck disable=SC2086
     [ $predicate ] 2>/dev/null && return 0
   fi
   return 1
@@ -149,18 +160,14 @@ trim() {
 
 #- - - - - - - - - - -
 
-export MUTEOUT=\>/dev/null
-export MUTEERR=2\>/dev/null
-export MUTE="$MUTEOUT $MUTEERR"
-
 mute() {
   [ "$#" == 0 ] && return 1
 
   case $1 in
-  1)
+  "1")
     shift && eval "$@" "$MUTEOUT"
     ;;
-  2)
+  "2")
     shift && eval "$@" "$MUTEERR"
     ;;
   *)
@@ -176,10 +183,19 @@ mute() {
 and() {
   [ "$#" == 0 ] && return 1
   for ((i = 1; i <= ${#}; i++)); do
-    eval "\$$i"
-    [ "$?" != 0 ] && return 1 # change to if
+    if ! eval "\$$i"; then return 1; fi
   done
   return 0
+}
+
+#- - - - - - - - - - -
+
+or() {
+  [ "$#" == 0 ] && return 1
+  for ((i = 1; i <= ${#}; i++)); do
+    if eval "\$$i"; then return 0; fi
+  done
+  return 1
 }
 
 #- - - - - - - - - - -
@@ -188,20 +204,3 @@ iscommand() {
   [ "$#" == 0 ] && return 1
   command -v "$1" >/dev/null || return 1
 }
-
-#- - - - - - - - - - -
-
-or() {
-  [ "$#" == 0 ] && return 1
-  for ((i = 1; i <= ${#}; i++)); do
-    eval "\$$i"
-    [ "$?" == 0 ] && return 0 # change to if
-  done
-  return 1
-}
-
-#--------------
-
-alias conditional='ternary'
-alias all='and'
-alias any='or'

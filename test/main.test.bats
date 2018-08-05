@@ -26,19 +26,19 @@
   [ $status == 11 ]
 }
 
-#- - - - - ifprevious - - - - -
+#- - - - - iflast - - - - -
 
-@test 'ifprevious exit 0' {
+@test 'iflast exit 0' {
   true
-  ifprevious noop
+  iflast noop
 }
 
-@test 'ifprevious exit non 0' {
-  false || ifprevious noop || true
+@test 'iflast exit non 0' {
+  false || iflast noop || true
 }
 
-@test 'ifprevious returns exit status' {
-  run exitwith 123 || ifprevious noop
+@test 'iflast returns exit status' {
+  run exitwith 123 || iflast noop
   [ $status == 123 ]
 }
 
@@ -49,12 +49,12 @@
   [ $status == 1 ]
 }
 
-@test "not <exit 0> exit 1" {
+@test "not true exit 1" {
   run not exitwith 0
   [ $status == 1 ]
 }
 
-@test "not <exit 1> exit 0" {
+@test "not false exit 0" {
   run not exitwith 1
   [ $status == 0 ]
 }
@@ -185,14 +185,14 @@
 
 #- - - - - ifdo - - - - -
 
-@test "ifdo 1 == 1 : echo y" {
-  run ifdo 1 == 1 : echo y
-  [ "$output" == "y" ]
+@test "ifdo 1 == 1 : echo yiip" {
+  run ifdo 1 == 1 : echo yiip
+  [ "$output" == "yiip" ]
 }
 
-@test "ifdo true : echo y" {
-  run ifdo true : echo y
-  [ "$output" == "y" ]
+@test "ifdo true : echo yiip" {
+  run ifdo true : echo yiip
+  [ "$output" == "yiip" ]
 }
 
 @test "ifdo 1 == 10 : echo n" {
@@ -231,6 +231,8 @@
 true && status
 }
 
+#- - - - - mute - - - - -
+
 @test "mute echo nope" {
   run mute echo nope
   [ ! "$output" ]
@@ -255,4 +257,87 @@ true && status
   mute echo dd
   run mute invalidcommand
   [ "$status" == 0 ]
+}
+
+#- - - - - and - - - - -
+
+@test "and true true true" {
+    run and true true true
+    [ "$status" == 0 ]
+}
+
+@test "and true true false" {
+    run and true true false
+    [ "$status" == 1 ]
+}
+
+@test "and false true true" {
+    run and false true true
+    [ "$status" == 1 ]
+}
+
+@test "and echo echo echo" {
+    run and 'echo -n y' 'echo -n y' 'echo -n y'
+    [ "$output" == "yyy" ]
+}
+
+@test "and ls echo test" {
+    run and 'ls' 'echo yiip' '[ 1 == 1 ]'
+    [ "$status" == "0" ]
+}
+
+@test "and \$var \$var echo" {
+    local var=6
+    run and "[ $var -gt 1 ]" "[ $var -lt 10 ]" 'echo yiip'
+    [ "$output" == "yiip" ]
+}
+
+#- - - - - or - - - - -
+
+@test "or true true true" {
+    run or true true true
+    [ "$status" == 0 ]
+}
+
+@test "or false true true" {
+    run or false true true
+    [ "$status" == 0 ]
+}
+
+@test "or false false false" {
+    run or false false false
+    [ "$status" == 1 ]
+}
+
+@test "or echo echo echo" {
+    run or 'echo -n y' 'echo -n y' 'echo -n y'
+    [ "$output" == "y" ]
+}
+
+@test "or test echo" {
+    run or '[ 1 == 1 ]' 'echo yiip'
+    [ ! "$output" ]
+}
+
+@test "or \$var \$var echo" {
+    local var=6
+    run or "[ $var -gt 7 ]" "[ $var -lt 2 ]" 'echo yiip'
+    [ "$output" == "yiip" ]
+}
+
+#- - - - - iscommand- - - - -
+
+@test "iscommand with no args exit 1" {
+    run iscommand
+    [ "$status" == 1 ]
+}
+
+@test "iscommand echo" {
+    run iscommand echo
+    [ "$status" == 0 ]
+}
+
+@test "iscommand invalidcommand" {
+    run iscommand invalidcommand
+    [ "$status" == 1 ]
 }

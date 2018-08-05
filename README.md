@@ -5,5 +5,5 @@
 _some good names_
 
 - istrue previous istruthy
-- iftrue ifprevious iftruthy
-- doiftrue ifprevious doiftruthy
+- iftrue iflast iftruthy
+- doiftrue iflast doiftruthy
