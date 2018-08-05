@@ -70,61 +70,61 @@
   [ $status == 1 ]
 }
 
-@test "dotest with no args exit 1" {
-  run dotest
+@test "ok with no args exit 1" {
+  run ok
   [ $status == 1 ]
 }
 
-@test "dotest 1 == 1" {
-  dotest 1 == 1
+@test "ok 1 == 1" {
+  ok 1 == 1
 }
 
-@test "dotest 1 == 12" {
-  run dotest 1 == 12
+@test "ok 1 == 12" {
+  run ok 1 == 12
   [ $status == 1 ]
 }
 
-@test "dotest \"1 == 12\"" {
-  run dotest "1 == 12"
+@test "ok \"1 == 12\"" {
+  run ok "1 == 12"
   [ $status == 1 ]
 }
 
-@test "dotest \"12 -gt 2\"" {
-  dotest "12 -gt 2"
+@test "ok \"12 -gt 2\"" {
+  ok "12 -gt 2"
 }
 
-@test "dotest \$foo exit 1" {
+@test "ok \$foo exit 1" {
   local foo=123
-  run dotest $foo
+  run ok $foo
   [ $status == 1 ]
 }
 
-@test "dotest -n \$foo exit 0" {
+@test "ok -n \$foo exit 0" {
   local foo=123
-  dotest -n $foo
+  ok -n $foo
 }
 
-@test "dotest 341 exit 1" {
-  run dotest 341
+@test "ok 341 exit 1" {
+  run ok 341
   [ $status == 1 ]
 }
 
-@test "dotest -ffoobar exit 1" {
-  run dotest -ffoobar
+@test "ok -ffoobar exit 1" {
+  run ok -ffoobar
   [ $status == 1 ]
 }
 
-@test "dotest -f exit 1" {
-  run dotest -f
+@test "ok -f exit 1" {
+  run ok -f
   [ $status == 1 ]
 }
 
-@test "dotest with if" {
-  if dotest -n "somelength"; then true; fi
+@test "ok with if" {
+  if ok -n "somelength"; then true; fi
 }
 
-@test "dotest with if else" {
-  if dotest 1 -gt 20; then false; else true; fi
+@test "ok with if else" {
+  if ok 1 -gt 20; then false; else true; fi
 }
 
 @test "ternary exit 1 when not given 5 args" {
@@ -169,31 +169,26 @@
 }
 
 @test "ifdo 1 == 1 : echo y" {
-  skip
   run ifdo 1 == 1 : echo y
   [ $output == "y" ]
 }
 
 @test "ifdo true : echo y" {
-  skip
   run ifdo true : echo y
   [ $output == "y" ]
 }
 
 @test "ifdo 1 == 10 : echo n" {
-  skip
-  run ifdo 1 == 10 : echo "n"
-  [ $output == "n" ]
+  run ifdo 1 == 10 : echo "exits with 1"
+  [ $status == 1 ]
 }
 
 @test "ifdo false : echo n" {
-  skip
-  run ifdo false : echo "n"
-  [ $output == "n" ]
+  run ifdo false : echo "exits with 1"
+  [ $status == 1 ]
 }
 
 @test "ifdo with var" {
-  skip
   local foo=33
   run ifdo $foo == 33 : echo "y"
   [ $output == "y" ]

@@ -35,7 +35,7 @@ not() {
 
 #- - - - - - - - - - -
 
-truthy() {
+truthy() { # remove truthy
   [ $# == 0 ] && return 1
   [ "$1" ] && return ${#1}
   return 1
@@ -43,7 +43,7 @@ truthy() {
 
 #- - - - - - - - - - -
 
-dotest() {
+ok() { # remove strict predicate check and allow [ $foo ]
   [ $# == 0 ] && return 1
   local predicate="$*" isNotTruthyTestOrInvalid='^-[[:alpha:]][ ][^ ]+|[^ ]+[ ]-[[:alpha:]][[:alpha:]][ ][^ ]+|[^ ]+[ ]=[ ][^ ]+|[^ ]+[ ]==[ ][^ ]+|[^ ]+[ ]!=[ ][^ ]+|[^ ]+[ ]<[ ][^ ]+|[^ ]+[ ]>[ ][^ ]+'
   if [[ "$predicate" =~ $isNotTruthyTestOrInvalid ]]; then
@@ -68,6 +68,18 @@ splitQC() {
   # [foo ? bar : ]baz
   SPLITQC[2]=${args#* '?' * ':' }
   export SPLITQC
+}
+
+splitC() {
+  # foo : bar -> "foo" "bar"
+  # args: strings
+  # returns: sets array SPLITC
+  local args="$*"
+  # foo[ : bar] -> remove [...]
+  SPLITC[0]=${args% ':' *}
+  # [foo : ]bar
+  SPLITC[1]=${args#* ':' }
+  export SPLITC
 }
 
 firstWord() {
@@ -97,11 +109,10 @@ ternary() {
   # if it's not a command, assume it's a value and append printf
   if ! command -v "$passCommand" >/dev/null; then pass="printf \"$pass\""; fi
   if ! command -v "$failCommand" >/dev/null; then fail="printf \"$fail\""; fi
-  # handle cases where condition = "true"|"false"
-  if [[ "$condition" =~ [[:space:]]*true[[:space:]]* ]]; then eval "$pass" && return; fi
-  if [[ "$condition" =~ [[:space:]]*false[[:space:]]* ]]; then eval "$fail" && return; fi
+  # "false" will fail implicitly.
+  if [[ "$condition" =~ "true" ]]; then eval "$pass" && return; fi
   # main logic
-  if dotest "$condition"; then
+  if ok "$condition"; then
     eval "$pass"
   else
     eval "$fail"
@@ -112,9 +123,12 @@ ternary() {
 
 ifdo() {
   [ $# -lt 2 ] && return 1
-  if dotest "$1"; then
-    shift && eval "$@"
-  fi
+  splitC "$@"
+  condition=${SPLITC[0]}
+  commands=${SPLITC[1]}
+  if [[ "$condition" =~ "true" ]]; then eval "$commands" && return; fi
+  if ok "$condition"; then eval "$commands" && return; fi
+  return 1
 }
 
 #- - - - - - - - - - -
