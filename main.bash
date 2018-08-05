@@ -48,7 +48,7 @@ dotest() {
   local predicate="$@"
   local isNotTruthyTestOrInvalid='^-[[:alpha:]][ ][^ ]+|[^ ]+[ ]-[[:alpha:]][[:alpha:]][ ][^ ]+|[^ ]+[ ]=[ ][^ ]+|[^ ]+[ ]==[ ][^ ]+|[^ ]+[ ]!=[ ][^ ]+|[^ ]+[ ]<[ ][^ ]+|[^ ]+[ ]>[ ][^ ]+'
   if [[ "$predicate" =~ $isNotTruthyTestOrInvalid ]]
-  then [ $predicate ] 2>/dev/null && return 0
+		then [ $predicate ] 2>/dev/null && return 0
   fi
   return 1
 }
