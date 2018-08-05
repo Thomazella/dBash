@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 noop() {
-  return 0
+  true
 }
 
 #- - - - - - - - - - -
@@ -134,7 +134,9 @@ ifdo() {
 #- - - - - - - - - - -
 
 status() {
-  eval "$@" 1>/dev/null 2>/dev/null
+  local status=$?
+  if [ "$#" == 0 ]; then echo $status && return 0; fi
+  eval "$@" >/dev/null 2>&1
   echo $?
 }
 
@@ -147,10 +149,26 @@ trim() {
 
 #- - - - - - - - - - -
 
+export MUTEOUT=\>/dev/null
+export MUTEERR=2\>/dev/null
+export MUTE="$MUTEOUT $MUTEERR"
+
 mute() {
   [ "$#" == 0 ] && return 1
-  local noStdout=1\>/dev/null noStderr=2\>/dev/null
-  eval "$@" $noStdout $noStderr
+
+  case $1 in
+  1)
+    shift && eval "$@" "$MUTEOUT"
+    ;;
+  2)
+    shift && eval "$@" "$MUTEERR"
+    ;;
+  *)
+    eval "$@" "$MUTE"
+    ;;
+  esac
+
+  return 0
 }
 
 #- - - - - - - - - - -

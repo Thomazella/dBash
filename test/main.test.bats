@@ -2,14 +2,19 @@
 
 [ -f main.bash ] && load ../main
 
+#- - - - - noop - - - - -
+
 @test "noop returns 0" {
   noop
 }
+
+#- - - - - exitwith - - - - -
 
 @test "exitwith defaults to 0" {
   run exitwith
   [ $status == 0 ]
 }
+
 
 @test "exitwith 22" {
   run exitwith 22
@@ -20,6 +25,8 @@
   run exitwith 11 || exitstatus
   [ $status == 11 ]
 }
+
+#- - - - - ifprevious - - - - -
 
 @test 'ifprevious exit 0' {
   true
@@ -35,6 +42,8 @@
   [ $status == 123 ]
 }
 
+#- - - - - not - - - - -
+
 @test "not with no args exit 1" {
   run not
   [ $status == 1 ]
@@ -49,6 +58,8 @@
   run not exitwith 1
   [ $status == 0 ]
 }
+
+#- - - - - truthy - - - - -
 
 @test "truthy with no args exit 1" {
   run truthy
@@ -69,6 +80,8 @@
   run truthy ''
   [ $status == 1 ]
 }
+
+#- - - - - ok - - - - -
 
 @test "ok with no args exit 1" {
   run ok
@@ -127,6 +140,8 @@
   if ok 1 -gt 20; then false; else true; fi
 }
 
+#- - - - - ternary - - - - -
+
 @test "ternary exit 1 when not given 5 args" {
   run ternary 1
   [ $status == 1 ]
@@ -143,24 +158,24 @@
 
 @test "ternary 1 == 10 ? y : n" {
   run ternary 1 == 10 ? y : n
-  [ $output == "n" ]
+  [ "$output" == "n" ]
 }
 
 @test "ternary true ? y : n" {
   run ternary true ? y : n
-  [ $output == "y" ]
+  [ "$output" == "y" ]
 }
 
 @test "ternary false ? y : n" {
   run ternary false ? y : n
-  [ $output == "n" ]
+  [ "$output" == "n" ]
 }
 
 @test "ternary \$var == \$var ? y : n" {
   local a=1
-  local b=2
+  local b=2333
   run ternary $a == $b ? y : n
-  [ $output == "n" ]
+  [ "$output" == "n" ]
 }
 
 @test "ternary one liner in var declaration" {
@@ -168,14 +183,16 @@
   [ $b == 99 ]
 }
 
+#- - - - - ifdo - - - - -
+
 @test "ifdo 1 == 1 : echo y" {
   run ifdo 1 == 1 : echo y
-  [ $output == "y" ]
+  [ "$output" == "y" ]
 }
 
 @test "ifdo true : echo y" {
   run ifdo true : echo y
-  [ $output == "y" ]
+  [ "$output" == "y" ]
 }
 
 @test "ifdo 1 == 10 : echo n" {
@@ -191,5 +208,51 @@
 @test "ifdo with var" {
   local foo=33
   run ifdo $foo == 33 : echo "y"
-  [ $output == "y" ]
+  [ "$output" == "y" ]
+}
+
+#- - - - - status - - - - -
+
+@test "status exitwith 11" {
+  run status exitwith 11
+  [ "$output" == "11" ]
+}
+
+@test "status true" {
+  run status true
+  [ "$output" == "0" ]
+}
+
+@test "status after exitwith 11" {
+  exitwith 11 || status
+}
+
+@test "status after true" {
+true && status
+}
+
+@test "mute echo nope" {
+  run mute echo nope
+  [ ! "$output" ]
+}
+
+@test "mute invalidcommand" {
+  run mute invalidcommand
+  [ ! "$output" ]
+}
+
+@test "mute 1 invalidcommand" {
+  run mute 1 invalidcommand
+  [[ "$output" =~ 'command not found' ]]
+}
+
+@test "mute 2 echo nope" {
+  run mute 2 echo nope
+  [ "$output" == "nope" ]
+}
+
+@test "mute exit 0" {
+  mute echo dd
+  run mute invalidcommand
+  [ "$status" == 0 ]
 }
