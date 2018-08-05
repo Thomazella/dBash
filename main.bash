@@ -54,31 +54,53 @@ dotest() {
 
 #- - - - - - - - - - -
 
+splitQC() {
+  # foo ? bar : baz -> "foo" "bar" "baz"
+  # args: strings
+  # returns: sets array SPLITQC
+  local args="$*" temp
+  # foo[ ? bar : baz] -> remove [...]
+  SPLITQC[0]=${args% '?' * ':' *}
+  # foo ? bar[ : baz]
+  temp=${args% : *}
+  # [foo ? ]bar
+  SPLITQC[1]=${temp#* '?' }
+  # [foo ? bar : ]baz
+  SPLITQC[2]=${args#* '?' * ':' }
+  export SPLITQC
+}
+
+firstWord() {
+  # args: strings
+  # returns: FIRSTWORD var
+  if [[ "$*" =~ ^[[:space:]]*([^ ]+) ]]; then
+    FIRSTWORD=${BASH_REMATCH[1]}
+    export FIRSTWORD
+    return 0
+  fi
+  return 1
+}
+
 ternary() {
   [ $# -lt 5 ] && return 1
   # reject malformed arguments. This is good: foo ? a : b.
   [[ ! "$*" =~ [[:space:]]+[?][[:space:]]+[^:]+[[:space:]]+[:][[:space:]]+ ]] && return 1
 
   local condition pass fail passCommand failCommand
-  # parse args into local var condition, pass and fail
-  for arg in "$@"; do
-    [ "$arg" == "?" ] && [ ! "$question" ] && local question=true && continue
-    [ "$arg" == ":" ] && [ ! "$colon" ] && local colon=true && continue
-    [ ! $question ] && [ ! $colon ] && condition="$condition $arg" && continue
-    [ $question ] && [ ! $colon ] && pass="$pass $arg" && continue
-    fail="$fail $arg"
-  done
+  splitQC "$@"
+  condition=${SPLITQC[0]}
+  pass=${SPLITQC[1]}
+  fail=${SPLITQC[2]}
 
-  # get the first word out
-  [[ "$pass" =~ ^[[:space:]]*([^ ]+) ]] && passCommand=${BASH_REMATCH[1]}
-  [[ "$fail" =~ ^[[:space:]]*([^ ]+) ]] && failCommand=${BASH_REMATCH[1]}
+  firstWord "$pass" && passCommand=${FIRSTWORD}
+  firstWord "$fail" && failCommand=${FIRSTWORD}
   # if it's not a command, assume it's a value and append printf
   if ! command -v "$passCommand" >/dev/null; then pass="printf \"$pass\""; fi
   if ! command -v "$failCommand" >/dev/null; then fail="printf \"$fail\""; fi
-  # handle cases where condition = true|false
+  # handle cases where condition = "true"|"false"
   if [[ "$condition" =~ [[:space:]]*true[[:space:]]* ]]; then eval "$pass" && return; fi
   if [[ "$condition" =~ [[:space:]]*false[[:space:]]* ]]; then eval "$fail" && return; fi
-  # main logicf
+  # main logic
   if dotest "$condition"; then
     eval "$pass"
   else
@@ -88,7 +110,7 @@ ternary() {
 
 #- - - - - - - - - - -
 
-doif() {
+ifdo() {
   [ $# -lt 2 ] && return 1
   if dotest "$1"; then
     shift && eval "$@"
@@ -141,7 +163,7 @@ or() {
   [ "$#" == 0 ] && return 1
   for ((i = 1; i <= ${#}; i++)); do
     eval "\$$i"
-    [ "$?" == 0 ] && return 0  # change to if
+    [ "$?" == 0 ] && return 0 # change to if
   done
   return 1
 }

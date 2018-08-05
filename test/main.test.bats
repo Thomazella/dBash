@@ -138,7 +138,7 @@
 
 @test "ternary 1 == 1 ? y : n" {
   run ternary 1 == 1 ? y : n
-  [ $output == "y" ]
+  [ "$output" == "y" ]
 }
 
 @test "ternary 1 == 10 ? y : n" {
@@ -163,7 +163,38 @@
   [ $output == "n" ]
 }
 
-@test "one liner ternary in var declaration" {
+@test "ternary one liner in var declaration" {
   local b=$(ternary true ? 99 : 00)
   [ $b == 99 ]
+}
+
+@test "ifdo 1 == 1 : echo y" {
+  skip
+  run ifdo 1 == 1 : echo y
+  [ $output == "y" ]
+}
+
+@test "ifdo true : echo y" {
+  skip
+  run ifdo true : echo y
+  [ $output == "y" ]
+}
+
+@test "ifdo 1 == 10 : echo n" {
+  skip
+  run ifdo 1 == 10 : echo "n"
+  [ $output == "n" ]
+}
+
+@test "ifdo false : echo n" {
+  skip
+  run ifdo false : echo "n"
+  [ $output == "n" ]
+}
+
+@test "ifdo with var" {
+  skip
+  local foo=33
+  run ifdo $foo == 33 : echo "y"
+  [ $output == "y" ]
 }
