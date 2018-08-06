@@ -29,7 +29,7 @@ exitstatus() {
 
 #- - - - - - - - - - -
 
-iflast() {
+iflast() { # add a not first arg to invert logic
   local previous=$?
   [ $previous != 0 ] && return $previous
   eval "$@"
@@ -37,7 +37,7 @@ iflast() {
 
 #- - - - - - - - - - -
 
-not() {
+not() { # make it invert the last exit status
   [ $# == 0 ] && return 1
   eval "$@" && return 1
   return 0
@@ -132,7 +132,7 @@ ternary() {
 
 #- - - - - - - - - - -
 
-ifdo() {
+ifdo() { #probably remove ok. make it exit status based
   [ $# -lt 2 ] && return 1
   splitC "$@"
   condition=${SPLITC[0]}
@@ -204,3 +204,5 @@ iscommand() {
   [ "$#" == 0 ] && return 1
   command -v "$1" >/dev/null || return 1
 }
+
+# improve readme to showcase the lib in the examples.
